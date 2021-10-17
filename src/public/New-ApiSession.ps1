@@ -42,11 +42,10 @@ function New-ApiSession
         Write-Error -Message "Session could not be opened"
     }
     $script:latestSession = @{Uri = $ApiUri; Auth = $r.result}
-    $script:latestSession
 
-    $ver = Get-ApiVersion -Session $script:latestSession
-    $vers = $ver.split(".")
-    if ( ($vers[0] -lt 2) -or ($vers[0] -eq 2 -and $vers[1] -lt 4))
+    $apiVersion = [Version] (Get-ApiVersion -Session $script:latestSession)
+    $script:latestSession.ApiVersion = $apiVersion
+    if ( ($apiVersion.Major -lt 2) -or ($apiVersion.Major -eq 2 -and $apiVersion.Minor -lt 4))
     {
         Write-Warning "PSZabbix has not been tested with this version of Zabbix ${ver}. Tested version are >= 2.4. It should still work but be warned."
     }
@@ -54,4 +53,5 @@ function New-ApiSession
     {
         Write-Information "Connected to Zabbix version ${ver}"
     }
+    $script:latestSession
 }

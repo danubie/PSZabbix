@@ -12,10 +12,10 @@ BeforeAll {
         }
         $secpasswd = ConvertTo-SecureString "zabbix" -AsPlainText -Force
         $global:admin = New-Object System.Management.Automation.PSCredential ("Admin", $secpasswd)
-        
+
         $wrongsecpasswd = ConvertTo-SecureString "wrong" -AsPlainText -Force
         $global:admin2 = New-Object System.Management.Automation.PSCredential ("Admin", $wrongsecpasswd)
-        
+
         $s = New-ZbxApiSession $baseUrl $global:admin -silent
 
         $testTemplate = Get-ZbxTemplate | Select-Object -First 1
@@ -25,7 +25,7 @@ BeforeAll {
         Write-Warning "Error setup Tests $e $($_.exception)"
         Throw $e
     }
-    
+
 }
 AfterAll {
     Remove-Module $moduleName
@@ -33,13 +33,15 @@ AfterAll {
 
 Describe "New-ZbxApiSession" {
     BeforeAll {
-        $session = New-ZbxApiSession $baseUrl $admin -silent        
+        $session = New-ZbxApiSession $baseUrl $admin -silent
     }
 
     It "connects to zabbix and returns a non-empty session object" {
-        $session | Should -Not -Be $null
-        $session["Uri"] | Should -Not -Be $null
-        $session["Auth"] | Should -Not -Be $null
+        $session | Should -Not -BeNullOrEmpty
+        $session["Uri"] | Should -Not -BeNullOrEmpty
+        $session["Auth"] | Should -Not -BeNullOrEmpty
+        $session["ApiVersion"] | Should -Not -BeNullOrEmpty
+        $session["ApiVersion"] | Should -BeOfType [Version]
     }
 
     It "fails when URL is wrong" {
@@ -231,7 +233,7 @@ Describe "Get-ZbxTemplate" {
     It "can filter by ID (explicit parameter)" {
         $h = (Get-ZbxTemplate "Template OS Lin*")[0]
         (Get-ZbxTemplate -Id $h.templateid).host | Should -Be $h.host
-    }      
+    }
 }
 
 Describe "New-ZbxHostGroup" {
@@ -268,7 +270,7 @@ Describe "Get-ZbxHostGroup" {
     It "can filter by ID (explicit parameter)" {
         $h = (Get-ZbxHostGroup "pestertest*")[0]
         (Get-ZbxHostGroup -Id $h.groupid).name | Should -Be $h.name
-    }      
+    }
 }
 
 Describe "Remove-ZbxHostGroup" {
@@ -313,7 +315,7 @@ Describe "Get-ZbxUserGroup" {
     It "can filter by ID (explicit parameter)" {
         $h = (Get-ZbxUserGroup "Zabbix*")[0]
         (Get-ZbxUserGroup -Id $h.usrgrpid).name | Should -Be $h.name
-    }      
+    }
 }
 
 Describe "New-ZbxUserGroup" {
@@ -596,7 +598,7 @@ Describe "Get-ZbxMediaType" {
     It "can filter by technical media type" {
         Get-ZbxMediaType -type Email | Should -Not -BeNullOrEmpty
         Get-ZbxMediaType -type EzTexting | Should -BeNullOrEmpty
-    }         
+    }
 }
 
 Describe "Add-ZbxUserMail" {
@@ -673,7 +675,7 @@ Describe "Update-ZbxHost" {
 
     It "can update the name of a host" {
         $h.name = "newname"
-        $h | Update-ZbxHost 
+        $h | Update-ZbxHost
         Get-ZbxHost -id $h.hostid | select -ExpandProperty name | Should -Be "newname"
         Remove-ZbxHost $h.hostId
     }
