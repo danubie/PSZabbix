@@ -1,4 +1,5 @@
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
 param()
 BeforeAll {
     Try {
@@ -471,7 +472,7 @@ Describe "Add-ZbxUserGroupMembership" {
         $u1, $u2 | Add-ZbxUserGroupMembership $g1, $g2 | Should -Be @($u1.userid, $u2.userid)
         $u1 = Get-ZbxUser pestertestrem
         $u2 = Get-ZbxUser pestertestrem2
-        $u1.usrgrps | select -ExpandProperty usrgrpid | Should -Be @(8, $g1.usrgrpid, $g2.usrgrpid)
+        $u1.usrgrps | Select-Object -ExpandProperty usrgrpid | Should -Be @(8, $g1.usrgrpid, $g2.usrgrpid)
     }
     It "same with ID instead of objects" {
         Get-ZbxUser "pester*" | Remove-ZbxUser
@@ -490,7 +491,7 @@ Describe "Add-ZbxUserGroupMembership" {
         $u1.userid, $u2.userid | Add-ZbxUserGroupMembership $g1.usrgrpid, $g2.usrgrpid | Should -Be @($u1.userid, $u2.userid)
         $u1 = Get-ZbxUser pestertestrem3
         $u2 = Get-ZbxUser pestertestrem4
-        $u1.usrgrps | select -ExpandProperty usrgrpid | Should -Be @(8, $g1.usrgrpid, $g2.usrgrpid)
+        $u1.usrgrps | Select-Object -ExpandProperty usrgrpid | Should -Be @(8, $g1.usrgrpid, $g2.usrgrpid)
     }
 }
 
@@ -513,7 +514,7 @@ Describe "Remove-ZbxUserGroupMembership" {
         $u1, $u2 | Remove-ZbxUserGroupMembership $g1, $g2 | Should -Be @($u1.userid, $u2.userid)
         $u1 = Get-ZbxUser pestertestrem
         $u2 = Get-ZbxUser pestertestrem2
-        $u1.usrgrps | select -ExpandProperty usrgrpid | Should -Be @(8)
+        $u1.usrgrps | Select-Object -ExpandProperty usrgrpid | Should -Be @(8)
     }
     It "same with ID instead of objects" {
         Get-ZbxUser "pester*" | Remove-ZbxUser
@@ -532,11 +533,11 @@ Describe "Remove-ZbxUserGroupMembership" {
         $u1.userid, $u2.userid | Add-ZbxUserGroupMembership $g1.usrgrpid, $g2.usrgrpid | Should -Be @($u1.userid, $u2.userid)
         $u1 = Get-ZbxUser pestertestrem3
         $u2 = Get-ZbxUser pestertestrem4
-        $u1.usrgrps | select -ExpandProperty usrgrpid | Should -Be @(8, $g1.usrgrpid, $g2.usrgrpid)
+        $u1.usrgrps | Select-Object -ExpandProperty usrgrpid | Should -Be @(8, $g1.usrgrpid, $g2.usrgrpid)
         $u1.userid, $u2.userid | Remove-ZbxUserGroupMembership $g1.usrgrpid, $g2.usrgrpid | Should -Be @($u1.userid, $u2.userid)
         $u1 = Get-ZbxUser pestertestrem3
         $u2 = Get-ZbxUser pestertestrem4
-        $u1.usrgrps | select -ExpandProperty usrgrpid | Should -Be @(8)
+        $u1.usrgrps | Select-Object -ExpandProperty usrgrpid | Should -Be @(8)
     }
 }
 
@@ -562,8 +563,8 @@ Describe "Add-ZbxUserGroupPermission" {
         $ug1, $ug2 | Add-ZbxUserGroupPermission $hg1, $hg2 ReadWrite | Should -Be @($ug1.usrgrpid, $ug2.usrgrpid)
         $ug1 = Get-ZbxUserGroup pestertest1
         $ug2 = Get-ZbxUserGroup pestertest2
-        $ug1.rights | select -ExpandProperty id | Should -Be @($hg1.groupid, $hg2.groupid)
-        $ug1.rights | select -ExpandProperty permission | Should -Be @(3, 3)
+        $ug1.rights | Select-Object -ExpandProperty id | Should -Be @($hg1.groupid, $hg2.groupid)
+        $ug1.rights | Select-Object -ExpandProperty permission | Should -Be @(3, 3)
     }
     It "can alter and clear permissions on a host group without touching permissions on other groups" {
         $ug1 = Get-ZbxUserGroup pestertest1
@@ -572,22 +573,22 @@ Describe "Add-ZbxUserGroupPermission" {
         $hg2 = Get-ZbxHostGroup pestertest2
 
         # Sanity check
-        $ug1.rights | select -ExpandProperty id | Should -Be @($hg1.groupid, $hg2.groupid)
-        $ug1.rights | select -ExpandProperty permission | Should -Be @(3, 3)
+        $ug1.rights | Select-Object -ExpandProperty id | Should -Be @($hg1.groupid, $hg2.groupid)
+        $ug1.rights | Select-Object -ExpandProperty permission | Should -Be @(3, 3)
 
         # Set HG1 RO.
         $ug1, $ug2 | Add-ZbxUserGroupPermission $hg1 ReadOnly | Should -Be @($ug1.usrgrpid, $ug2.usrgrpid)
         $ug1 = Get-ZbxUserGroup pestertest1
         $ug2 = Get-ZbxUserGroup pestertest2
-        $ug1.rights | select -ExpandProperty id | Should -Be @($hg1.groupid, $hg2.groupid)
-        $ug1.rights | select -ExpandProperty permission | Should -Be @(2, 3)
+        $ug1.rights | Select-Object -ExpandProperty id | Should -Be @($hg1.groupid, $hg2.groupid)
+        $ug1.rights | Select-Object -ExpandProperty permission | Should -Be @(2, 3)
 
         # Clear HG1
         $ug1, $ug2 | Add-ZbxUserGroupPermission $hg1 Clear | Should -Be @($ug1.usrgrpid, $ug2.usrgrpid)
         $ug1 = Get-ZbxUserGroup pestertest1
         $ug2 = Get-ZbxUserGroup pestertest2
-        $ug1.rights | select -ExpandProperty id | Should -Be @($hg2.groupid)
-        $ug1.rights | select -ExpandProperty permission | Should -Be @(3)
+        $ug1.rights | Select-Object -ExpandProperty id | Should -Be @($hg2.groupid)
+        $ug1.rights | Select-Object -ExpandProperty permission | Should -Be @(3)
     }
 }
 
@@ -676,7 +677,7 @@ Describe "Update-ZbxHost" {
     It "can update the name of a host" {
         $h.name = "newname"
         $h | Update-ZbxHost
-        Get-ZbxHost -id $h.hostid | select -ExpandProperty name | Should -Be "newname"
+        Get-ZbxHost -id $h.hostid | Select-Object -ExpandProperty name | Should -Be "newname"
         Remove-ZbxHost $h.hostId
     }
 }
