@@ -123,7 +123,7 @@ function New-User
             alias = $Alias
             name = if ($Name -ne $null) { $Name } else {$Alias}
             type = [int]$UserType
-            passwd = if ($Password -ne $null) {$Password} else { "" + (Get-Random -Maximum ([long]::MaxValue)) }
+            passwd = if ($Password -ne '') {$Password} else { "" + (Get-Random -Maximum ([long]::MaxValue)) }
             usrgrps = $usergrps
             user_medias = $media
         }
