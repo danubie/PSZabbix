@@ -51,7 +51,13 @@ function Get-User
         # Filter by name. Accepts wildcard.
         [string] $Name
     )
-    $prms = @{selectUsrgrps = "extend"; getAccess = 1; search= @{}; searchWildcardsEnabled = 1}
+    $prms = @{
+         selectUsrgrps = "extend"
+         selectMedias = "extend"
+         getAccess = 1
+         search= @{}
+         searchWildcardsEnabled = 1
+     }
     if ($Id.Length -gt 0) {$prms["userids"] = $Id}
     if ($UserGroupId.Length -gt 0) {$prms["usrgrpids"] = $UserGroupId}
     if ($Name -ne $null) {$prms["search"]["alias"] = $Name}
