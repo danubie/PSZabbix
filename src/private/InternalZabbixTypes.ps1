@@ -3,7 +3,7 @@ Add-Type -TypeDefinition @"
 public enum ZbxStatus
 {
    Enabled = 0,
-   Disabled = 1    
+   Disabled = 1
 }
 "@
 
@@ -13,7 +13,7 @@ Add-Type -TypeDefinition @"
    {
       WithDefaultAuthenticationMethod = 0,
       WithInternalAuthentication = 1,
-      Disabled = 2    
+      Disabled = 2
    }
 "@
 
@@ -23,7 +23,7 @@ Add-Type -TypeDefinition @"
       Clear = -1,
       Deny = 0,
       ReadOnly = 2,
-      ReadWrite = 3    
+      ReadWrite = 3
    }
 "@
 
@@ -32,7 +32,7 @@ Add-Type -TypeDefinition @"
    {
       User = 1,
       Admin,
-      SuperAdmin      
+      SuperAdmin
    }
 "@
 
@@ -80,7 +80,7 @@ Add-Type -TypeDefinition @"
       Warning = 4,
       Average = 8,
       High = 16,
-      Disaster = 32  
+      Disaster = 32
    }
 "@
 
@@ -92,7 +92,8 @@ Add-Type -TypeDefinition @"
       Script = 1,
       SMS = 2,
       Jabber = 3,
-      EzTexting = 100 
+      Webhook = 4,
+      EzTexting = 100
    }
 "@
 

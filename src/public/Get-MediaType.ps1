@@ -42,5 +42,12 @@ function Get-MediaType
     if ($Name -ne $null) {$prms["search"]["description"] = $Name}
     if ($Type -ne $null) {$prms["filter"]["type"] = [int]$Type}
 
-    Invoke-ZabbixApi $session "mediatype.get" $prms | ForEach-Object {$_.mediatypeid = [int]$_.mediatypeid; $_.type = [ZbxMediaTypeType]$_.type; $_.status = [ZbxStatus]$_.status; $_.PSTypeNames.Insert(0,"ZabbixMediaType"); $_}
+    $ret = Invoke-ZabbixApi $session "mediatype.get" $prms
+    $ret | ForEach-Object {
+        $_.mediatypeid = [int]$_.mediatypeid
+        $_.type = [ZbxMediaTypeType]$_.type
+        $_.status = [ZbxStatus]$_.status
+        $_.PSTypeNames.Insert(0,"ZabbixMediaType")
+        $_
+    }
 }

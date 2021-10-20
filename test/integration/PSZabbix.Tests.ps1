@@ -598,7 +598,7 @@ Describe "Get-ZbxMediaType" {
     }
     It "can filter by technical media type" {
         Get-ZbxMediaType -type Email | Should -Not -BeNullOrEmpty
-        Get-ZbxMediaType -type EzTexting | Should -BeNullOrEmpty
+        Get-ZbxMediaType -type Webhook | Should -Not -BeNullOrEmpty
     }
 }
 
@@ -615,11 +615,13 @@ Describe "Add-ZbxUserMail" {
 
 Describe "Get-ZbxMedia" {
     It "can return all media" {
-        Get-ZbxMedia |  Should -Not -BeNullOrEmpty
+        $ret = Get-ZbxMedia
+        $ret |  Should -Not -BeNullOrEmpty
     }
 
     It "can filter by media type" {
-        Get-ZbxMedia -MediaTypeId (Get-ZbxMediaType -Type email).mediatypeid |  Should -Not -BeNullOrEmpty
+        $ret = Get-ZbxMedia -MediaTypeId (Get-ZbxMediaType -Type email).mediatypeid
+        $ret |  Should -Not -BeNullOrEmpty
     }
 
     It "can filter actions used by certain users" {
