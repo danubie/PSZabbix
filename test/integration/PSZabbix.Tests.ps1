@@ -405,13 +405,6 @@ Describe "New-ZbxUser" {
         $g.count | Should -Be 1
         $g[0].name | Should -Match "marsu"
     }
-    It "create user with Media Email" {
-        $username = "pestertest$(Get-random)-withmail"
-        $g = @(New-ZbxUser -Alias $username -name "marsu" -UserGroupId 8 -MailAddress 'huhu@example.com')
-        $g.count | Should -Be 1
-        $g[0].name | Should -Match "marsu"
-        Remove-ZbxUser $g.UserId
-    }
     #TODO: fix example
     It "creates a new user from another user (copy)" -Skip {
         $u = Get-ZbxUser -Name $userToCopy
@@ -592,70 +585,6 @@ Describe "Add-ZbxUserGroupPermission" {
     }
 }
 
-Describe "Get-ZbxMediaType" {
-    It "can return all types" {
-        Get-ZbxMediaType | Should -Not -BeNullOrEmpty
-    }
-    It "can filter by technical media type" {
-        Get-ZbxMediaType -type Email | Should -Not -BeNullOrEmpty
-        Get-ZbxMediaType -type Webhook | Should -Not -BeNullOrEmpty
-    }
-}
-
-Describe "Add-ZbxUserMail" {
-    It "can add a mail to a user without mail" {
-        $u = @(New-ZbxUser -Alias "pestertestmedia$(Get-random)" -name "marsu" -UserGroupId 8)[0]
-        $u | Add-ZbxUserMail toto1@company.com | Should -Not -BeNullOrEmpty
-    }
-    It "can add a mail with specific severity filter" {
-        $u = @(New-ZbxUser -Alias "pestertestmedia$(Get-random)" -name "marsu" -UserGroupId 8)[0]
-        $u | Add-ZbxUserMail toto1@company.com Information, Warning | Should -Not -BeNullOrEmpty
-    }
-}
-
-Describe "Get-ZbxMedia" {
-    Context "with no users defined" {
-        It "returns nothing" {
-            $ret = Get-ZbxMedia
-            $ret |  Should -BeNullOrEmpty
-        }
-
-    }
-    Context "with users having media defined" {
-        BeforeAll {
-            $u1 = @(New-ZbxUser -Alias "pestertestmedia$(Get-random)" -name "marsu" -UserGroupId 8)[0]
-            $u1 | Add-ZbxUserMail toto1@company.com | Should -Not -BeNullOrEmpty
-            $u2 = @(New-ZbxUser -Alias "pestertestmedia$(Get-random)" -name "marsu" -UserGroupId 8)[0]
-            $u2 | Add-ZbxUserMail toto1@company.com Information, Warning | Should -Not -BeNullOrEmpty
-            }
-        It "can return all media" {
-            $ret = Get-ZbxMedia
-            $ret | Should -HaveCount 2
-        }
-
-        It "can filter by media type" {
-            $ret = Get-ZbxMedia -MediaTypeId (Get-ZbxMediaType -Type email).mediatypeid
-            $ret | Should -HaveCount 2
-        }
-
-        It "can filter actions used by certain users" {
-            $ret = Get-ZbxMedia -UserId @(Get-ZbxUser -Name "pestertestmedia*")[0].userid
-            $ret | Should -HaveCount 1
-        }
-        AfterAll {
-            Remove-ZbxUser $u1.UserId
-            Remove-ZbxUser $u2.UserId
-        }
-    }
-}
-
-Describe "Remove-ZbxMedia" {
-    It "can remove piped media" {
-        Get-ZbxMedia | Remove-ZbxMedia |  Should -Not -BeNullOrEmpty
-        Get-ZbxMedia |  Should -BeNullOrEmpty
-        Get-ZbxUser -Name "pestertestmedia*" | Remove-ZbxUser > $null
-    }
-}
 
 Describe "Disable-ZbxUserGroup" {
     BeforeAll {
@@ -702,3 +631,86 @@ Describe "Update-ZbxHost" {
         Remove-ZbxHost $h.hostId
     }
 }
+
+AfterAll {
+    Get-ZbxUser 'pestertestmedia*' | Remove-ZbxUser
+    # Remove-Module $moduleName
+}
+#region media tests
+AfterAll {
+    Get-ZbxUser 'pestertestmedia*' | Remove-ZbxUser -ErrorAction silentlycontinue
+}
+
+Describe "Get-ZbxMediaType" {
+    It "can return all types" {
+        Get-ZbxMediaType | Should -Not -BeNullOrEmpty
+    }
+    It "can filter by technical media type" {
+        Get-ZbxMediaType -type Email | Should -Not -BeNullOrEmpty
+        Get-ZbxMediaType -type Webhook | Should -Not -BeNullOrEmpty
+    }
+}
+
+Describe "Add-ZbxUserMail" {
+    BeforeAll {
+        $mailUser = @(New-ZbxUser -Alias "pestertestmediaemail" -name "marsu" -UserGroupId 8)[0]
+    }
+    AfterAll {
+        $mailUser | Remove-ZbxUser
+    }
+    It "can add email media to user" {
+        $mediaids = $mailUser | Add-ZbxUserMail toto1@company.com
+        $mediaids | Should -BeOfType [int]
+    }
+    #TODO
+    It "can add second email media to a user" -Skip {
+
+    }
+    #TODO: if it does make sense to do that?
+    It "cann add email to multiple users" -skip {
+
+    }
+}
+
+Describe "Get-ZbxMedia" {
+    Context "with no users defined" {
+        It "returns nothing" {
+            $ret = Get-ZbxMedia
+            $ret |  Should -BeNullOrEmpty
+        }
+    }
+    Context "with users having media defined" {
+        BeforeAll {
+            $u1 = @(New-ZbxUser -Alias "pestertestmedia$(Get-random)" -name "marsu" -UserGroupId 8)[0]
+            $u1 | Add-ZbxUserMail toto1@company.com | Should -Not -BeNullOrEmpty
+            $u2 = @(New-ZbxUser -Alias "pestertestmedia$(Get-random)" -name "marsu" -UserGroupId 8)[0]
+            $u2 | Add-ZbxUserMail toto1@company.com Information, Warning | Should -Not -BeNullOrEmpty
+        }
+        AfterAll {
+            Remove-ZbxUser $u1.UserId
+            Remove-ZbxUser $u2.UserId
+        }
+        It "can return all media" {
+            $ret = Get-ZbxMedia
+            $ret | Should -HaveCount 2
+        }
+        It "can filter by media type" {
+            $ret = Get-ZbxMedia -MediaTypeId (Get-ZbxMediaType -Type email).mediatypeid
+            $ret | Should -HaveCount 2
+        }
+        It "can filter actions used by certain users" {
+            $ret = Get-ZbxMedia -UserId @(Get-ZbxUser -Name "pestertestmedia*")[0].userid
+            $ret | Should -HaveCount 1
+        }
+    }
+}
+
+Describe "Remove-ZbxMedia" {
+    It "can remove piped media" -Skip {
+        Get-ZbxMedia | Remove-ZbxMedia |  Should -Not -BeNullOrEmpty
+        Get-ZbxMedia |  Should -BeNullOrEmpty
+        Get-ZbxUser -Name "pestertestmedia*" | Remove-ZbxUser > $null
+    }
+}
+
+#endregion
