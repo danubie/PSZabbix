@@ -50,6 +50,18 @@ function Add-UserMail
     end
     {
         if ($users.Count -eq 0) { return }
-        Invoke-ZabbixApi $session "user.addmedia"  @{users = $users; medias = $media} | Select-Object -ExpandProperty mediaids
+        if ((Get-CurrentApiVersion).Major -eq 3) {
+            Invoke-ZabbixApi $session "user.addmedia"  @{users = $users; medias = $media} | Select-Object -ExpandProperty mediaids
+        } else {
+            $prms = @{
+                userid = $users[0].userid
+                user_medias = @($media)
+            }
+            $ret = Invoke-ZabbixApi $session "user.update"  $prms
+            if ($ret) {
+                $users = Get-ZbxUser -userid $ret.userids
+                [int] $users.medias.mediaid
+            }
+        }
     }
 }
