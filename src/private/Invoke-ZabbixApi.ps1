@@ -9,7 +9,8 @@ function Invoke-ZabbixApi($session, $method, $parameters = @{})
         $session = $script:latestSession
     }
 
-    $r = Invoke-RestMethod -Uri $session.Uri -Method Post -ContentType "application/json" -Body (New-JsonrpcRequest $method $parameters $session.Auth)
+    $body = New-JsonrpcRequest $method $parameters $session.Auth
+    $r = Invoke-RestMethod -Uri $session.Uri -Method Post -ContentType "application/json" -Body $body
     if ($r.error -ne $null)
     {
         Write-Error -Message "$($r.error.message) $($r.error.data)" -ErrorId $r.error.code
