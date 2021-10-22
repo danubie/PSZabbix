@@ -35,12 +35,19 @@ function Disable-UserGroup
     }
     Process
     {
-         $ids += $UserGroupId
+        foreach ($grpId in $UserGroupId) {
+            $ids += @{ usrgrpid = $grpId; users_status = 1 }
+        }
     }
     end
     {
         if ($ids.Count -eq 0) { return }
-        Invoke-ZabbixApi $session "usergroup.massupdate" @{usrgrpids=$ids; users_status=1} | Select-Object -ExpandProperty usrgrpids
+        if ((Get-CurrentApiVersion).Major -eq 3) {
+            Invoke-ZabbixApi $session "usergroup.massupdate" @{usrgrpids=$ids; users_status=1} | Select-Object -ExpandProperty usrgrpids
+        } else {
+            $prms = @{ array = $ids }
+            Invoke-ZabbixApi $session "usergroup.update" $prms | Select-Object -ExpandProperty usrgrpids
+        }
     }
 }
 

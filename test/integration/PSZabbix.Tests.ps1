@@ -586,31 +586,36 @@ Describe "Add-ZbxUserGroupPermission" {
 }
 
 
-Describe "Disable-ZbxUserGroup" {
+Describe "Disable-ZbxUserGroup, Enable-ZbxUserGroup" {
     BeforeAll {
         New-ZbxUserGroup -Name "pestertestenable1" -errorAction silentlycontinue
+        New-ZbxUserGroup -Name "pestertestenable2" -errorAction silentlycontinue
         $h1 = Get-ZbxUserGroup pestertestenable1
+        $h2 = Get-ZbxUserGroup pestertestenable2
     }
     AfterAll {
         Get-ZbxUserGroup 'pestertestenable1' | Remove-ZbxUserGroup
+        Get-ZbxUserGroup 'pestertestenable2' | Remove-ZbxUserGroup
     }
 
-    It "can disable multiple piped objects" {
-        $h1 | Disable-ZbxUserGroup | Should -Be @($h1.usrgrpid)
+    It "can disable a singe objects" {
+        # default after creation is "enabled"
+        $h1.users_status | Should -Be 0
+
+        Disable-ZbxUserGroup $h1.usrgrpid | Should -Be @($h1.usrgrpid)
         [int](Get-ZbxUserGroup pestertestenable1).users_status | Should -Be 1
-    }
-}
+        [int](Get-ZbxUserGroup pestertestenable2).users_status | Should -Be 0 -Because 'should be left enabled'
 
-Describe "Enable-ZbxUserGroup" {
-    BeforeAll {
-        New-ZbxUserGroup -Name "pestertestenable1" -errorAction silentlycontinue
-        $h1 = Get-ZbxUserGroup pestertestenable1
+        $h1 | Enable-ZbxUserGroup | Should -Be @($h1.usrgrpid)
+        [int](Get-ZbxUserGroup pestertestenable1).users_status | Should -Be 0
     }
-    AfterAll {
-        Get-ZbxUserGroup 'pestertestenable1' | Remove-ZbxUserGroup
-    }
+    It "can disable and enable multiple piped objects" {
+        # default after creation is "enabled"
+        $h1.users_status | Should -Be 0
 
-    It "can enable multiple piped objects" {
+        $h1, $h2 | Disable-ZbxUserGroup | Should -Be @($h1.usrgrpid, $h2.usrgrpid )
+        [int[]](Get-ZbxUserGroup pestertestenable*).users_status | Should -Be @(1,1)
+
         $h1 | Enable-ZbxUserGroup | Should -Be @($h1.usrgrpid)
         [int](Get-ZbxUserGroup pestertestenable1).users_status | Should -Be 0
     }
