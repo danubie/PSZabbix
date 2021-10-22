@@ -38,7 +38,15 @@ function Update-Host
     }
     process
     {
-        $Hosts += $HostObject
+        if ((Get-CurrentApiVersion).Major -eq 3) {
+            $Hosts += $HostObject
+        } else {
+            # compatibility issue in 4.x?
+            # Property "auto_compress" is returned by Get-ZbxHost, but can not be updated
+            $tempHost = $HostObject |
+                ForEach-Object { Select-Object -InputObject $_ -ExcludeProperty auto_compress }
+            $Hosts += $tempHost
+        }
     }
     end
     {

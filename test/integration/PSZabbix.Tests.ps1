@@ -618,8 +618,8 @@ Describe "Enable-ZbxUserGroup" {
 
 Describe "Update-ZbxHost" {
     BeforeAll {
-        $name = "pestertesthost$(Get-Random)"
-        Get-ZbxHost -name "perster*" | remove-ZbxHost
+        $name = "pestetesthost$(Get-Random)"
+        Get-ZbxHost -name "pester*" | remove-ZbxHost
         Get-ZbxHost -name "newname" | remove-ZbxHost
         $h = New-ZbxHost -Name $name -HostGroupId 2 -TemplateId $testTemplateId -Dns localhost -errorAction silentlycontinue
     }
@@ -632,10 +632,6 @@ Describe "Update-ZbxHost" {
     }
 }
 
-AfterAll {
-    Get-ZbxUser 'pestertestmedia*' | Remove-ZbxUser
-    # Remove-Module $moduleName
-}
 #region media tests
 AfterAll {
     Get-ZbxUser 'pestertestmedia*' | Remove-ZbxUser -ErrorAction silentlycontinue
