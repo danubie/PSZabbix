@@ -46,11 +46,37 @@ function Get-Media
         # Only retrieve media which are in the given status.
         [ZbxStatus] $Status
     )
-    $prms = @{}
+    $prms = @{
+        selectUsrgrps = "extend"
+        selectMedias = "extend"
+        getAccess = 1
+        search= @{}
+        searchWildcardsEnabled = 1
+    }
     if ($Id.Length -gt 0) {$prms["mediaids"] = $Id}
     if ($UserGroupId.Length -gt 0) {$prms["usrgrpids"] = $UserGroupId}
     if ($UserId.Length -gt 0) {$prms["userids"] = $UserId}
     if ($MediaTypeId.Length -gt 0) {$prms["mediatypeids"] = $MediaTypeId}
     if ($Status -ne $null) {$prms["filter"] = @{"active" = [int]$Status}}
-    Invoke-ZabbixApi $session "usermedia.get" $prms | ForEach-Object {$_.severity = [ZbxSeverity]$_.severity; $_.mediaid = [int]$_.mediaid; $_.active=[ZbxStatus]$_.active; $_.PSTypeNames.Insert(0,"ZabbixMedia"); $_}
+    if ((Get-CurrentApiVersion).Major -eq 3) {
+        Invoke-ZabbixApi $session "usermedia.get" $prms | ForEach-Object {
+            $_.severity = [ZbxSeverity]$_.severity
+            $_.mediaid = [int]$_.mediaid
+            $_.active=[ZbxStatus]$_.active
+            $_.PSTypeNames.Insert(0,"ZabbixMedia")
+            $_
+        }
+    } else {
+        Invoke-ZabbixApi $session "user.get" $prms | ForEach-Object {
+            foreach ($objMedia in $_.medias) {
+                $obj = [PSCustomObject]@{
+                    severity = [ZbxSeverity]$objMedia.severity
+                    mediaid = [int]$objMedia.mediaid
+                    active=[ZbxStatus]$objMedia.active
+                }
+                $obj.PSTypeNames.Insert(0,"ZabbixMedia")
+                $obj
+            }
+        }
+    }
 }

@@ -702,6 +702,7 @@ Describe "Get-ZbxMedia" {
             $ret = Get-ZbxMedia -UserId @(Get-ZbxUser -Name "pestertestmedia*")[0].userid
             $ret | Should -HaveCount 1
         }
+        #TODO: check for a user having 2 different media types
     }
 }
 
