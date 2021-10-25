@@ -62,7 +62,10 @@ function New-User
 
         [Parameter(Mandatory=$False, ValueFromPipelineByPropertyName=$true )]
         # Type of user. Default is simple user.
-        [ZbxUserType] $UserType = [ZbxUserType]::User,
+        [ZbxUserType] $UserType,
+
+        [int] $RoleId,
+        [string] $RoleName,
 
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName=$true, ParameterSetName = "login_withgroupid")]
         [Parameter(Mandatory=$True, ValueFromPipelineByPropertyName=$true, ParameterSetName = "pscred_withgroupid")]
@@ -88,6 +91,11 @@ function New-User
 
     begin
     {
+        # validate params according to different Zabbix versions
+        if ($null -ne $UserType -and ( $null -ne $RoleId -or $null -ne $RoleName ) ) {
+            Write-Error "Parameter combination not allowed: Use UserType for Zabbix3&4, [roleid|RoleName] for Zabiix 5"
+            Throw "Invalid parameter combination"
+        }
         $prms = @{}
         $media = @()
         if ($MailAddress -ne '')
@@ -122,10 +130,18 @@ function New-User
         $prms += @{
             alias = $Alias
             name = if ($Name -ne $null) { $Name } else {$Alias}
-            type = [int]$UserType
             passwd = if ($Password -ne '') {$Password} else { "" + (Get-Random -Maximum ([long]::MaxValue)) }
             usrgrps = $usergrps
             user_medias = $media
+        }
+        if ( (Get-CurrentApiVersion -Session $session).Major -lt 5 ) {
+            if ( $null -eq $UserType ) { $UserType = [ZbxUserType]::User }
+            $prms.type = [int]$UserType
+        } else {
+            if ($RoleName) {
+                $RoleId = (Get-ZbxUserRole -Name $RoleName).roleid
+            }
+            $prms.roleid = 1
         }
     }
     end

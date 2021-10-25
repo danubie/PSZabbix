@@ -17,7 +17,7 @@ BeforeAll {
         $wrongsecpasswd = ConvertTo-SecureString "wrong" -AsPlainText -Force
         $global:admin2 = New-Object System.Management.Automation.PSCredential ("Admin", $wrongsecpasswd)
 
-        $s = New-ZbxApiSession $baseUrl $global:admin -silent
+        $PesterSession = New-ZbxApiSession $baseUrl $global:admin -silent
 
         $testTemplate = Get-ZbxTemplate | Select-Object -First 1
         $testTemplateId = $testTemplate.templateid
@@ -415,6 +415,10 @@ Describe "New-ZbxUser" {
         $g.userid | Should -Not -Be $null
         $g.name | Should -Match "marsu"
         $g.usrgrps.usrgrpid | Should -Be 8
+    }
+    It "throws on incompatible role&type params" {
+        {New-ZbxUser  -Alias $userToCopy -name "marsu" -UserGroupId 8 -UserType 'User' -RoleId 2} |
+            Should -Throw "Parameter combination not allowed*"
     }
 }
 
