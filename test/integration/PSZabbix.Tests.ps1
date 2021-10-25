@@ -449,6 +449,31 @@ Describe "Remove-ZbxUser" {
     }
 }
 
+Describe "Get-ZbxUserRole" {
+    Context "ContextName" {
+        It "should read all roles" {
+            $ret = Get-ZbxUserRole
+            $ret.Count | Should -BeGreaterThan 0
+            $ret.Name | Should -Contain 'Admin role'
+        }
+        It "can read by roleid" {
+            $ret = Get-ZbxUserRole -Id 1
+            $ret.Count | Should -BeExactly 1
+            $ret.Name | Should -Contain 'User role'
+        }
+        It "can read by role name" {
+            $ret = Get-ZbxUserRole -Name "Guest role"
+            $ret.Count | Should -BeExactly 1
+            $ret.Name | Should -Contain 'Guest role'
+        }
+        It "can read by wildcard role name" {
+            $ret = Get-ZbxUserRole -Name "Guest*"
+            $ret.Count | Should -BeExactly 1
+            $ret.Name | Should -Contain 'Guest role'
+        }
+    }
+}
+
 Describe "Add-ZbxUserGroupMembership" {
     It "can add two user groups (explicit parameter) to piped users" {
         Get-ZbxUser "pester*" | Remove-ZbxUser
