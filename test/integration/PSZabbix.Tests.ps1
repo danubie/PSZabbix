@@ -377,7 +377,9 @@ Describe "Get-ZbxUser" {
         $ret = Get-ZbxUser "Admi*"
         $ret | Should -Not -BeNullOrEmpty
         $ret | Should -HaveCount 1
-        $ret.Alias | Should -Be 'Admin'
+        if ($PesterSession.ApiVersion.Major -eq 3) {
+            $ret.Alias | Should -Be 'Admin'
+        }
         $ret.Name | Should -Be 'Zabbix'
     }
     It "can filter by ID (explicit parameter)" {
