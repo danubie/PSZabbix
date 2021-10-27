@@ -60,6 +60,11 @@ function Get-User
      }
     if ($Id.Length -gt 0) {$prms["userids"] = $Id}
     if ($UserGroupId.Length -gt 0) {$prms["usrgrpids"] = $UserGroupId}
-    if ($Name -ne $null) {$prms["search"]["alias"] = $Name}
+    if ((Get-CurrentApiVersion).Major -eq 3) {
+         #TODO: check if v4 supports Alias or Username
+         if ($Name -ne $null) {$prms["search"]["alias"] = $Name}
+    } else {
+         if ($Name -ne $null) {$prms["search"]["username"] = $Name}
+    }
     Invoke-ZabbixApi $session "user.get"  $prms | ForEach-Object {$_.userid = [int]$_.userid; $_.PSTypeNames.Insert(0,"ZabbixUser"); $_}
 }
