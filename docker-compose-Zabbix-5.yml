@@ -1,31 +1,31 @@
 version: "3.9"
 services:
 
-  mysql-zabbix:
+  mysql8-zabbix:
     image: "mysql:8.0"
     environment:
       MYSQL_USER: "zabbix"
       MYSQL_PASSWORD: "zabbix_pwd"
       MYSQL_ROOT_PASSWORD: "zabbix_pwd"
 
-  zabbix-server-mysql:
+  zabbix5-server-mysql:
     image: "zabbix/zabbix-server-mysql:ubuntu-latest"
     ports:
       - "10051:10051"
     environment:
-      DB_SERVER_HOST: "mysql-zabbix"
+      DB_SERVER_HOST: "mysql8-zabbix"
       MYSQL_DATABASE: "zabbix"
       MYSQL_USER: "zabbix"
       MYSQL_PASSWORD: "zabbix_pwd"
       MYSQL_ROOT_PASSWORD: "zabbix_pwd"
 
-  zabbix-web:
+  zabbix5-web:
     image: "zabbix/zabbix-web-nginx-mysql:ubuntu-latest"
     ports:
       - "8080:8080"
     environment:
-      ZBX_SERVER_HOST: "zabbix-server-mysql"
-      DB_SERVER_HOST: "mysql-zabbix"
+      ZBX_SERVER_HOST: "zabbix5-server-mysql"
+      DB_SERVER_HOST: "mysql8-zabbix"
       MYSQL_DATABASE: "zabbix"
       MYSQL_USER: "zabbix"
       MYSQL_PASSWORD: "zabbix_pwd"
@@ -37,6 +37,6 @@ services:
       context: .devcontainer
       dockerfile: .\pscoredev.Dockerfile
     environment:
-      DEV_ZABBIX_HOST: zabbix-web
-      DEV_ZABBIX_API_URL: "http://zabbix-web:8080/api_jsonrpc.php"
+      DEV_ZABBIX_HOST: zabbix5-web
+      DEV_ZABBIX_API_URL: "http://zabbix5-web:8080/api_jsonrpc.php"
     command: /bin/sh -c "while sleep 1000; do :; done"
