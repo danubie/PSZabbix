@@ -1,16 +1,23 @@
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseDeclaredVarsMoreThanAssignments", "")]
-param()
+param([int] $ZabbixVersion = 5)
+
+BeforeDiscovery {
+}
+
 BeforeAll {
     Try {
         $moduleName = 'PSZabbix'
         $moduleRoot = "$PSScriptRoot/../../"
         Import-Module $moduleRoot/$moduleName.psd1 -Force
 
-        $global:baseUrl = $env:DEV_ZABBIX_API_URL
-        if ('' -eq $global:baseUrl) {
-            $global:baseUrl = "http://tools/zabbix/api_jsonrpc.php"
+        switch ($ZabbixVersion) {
+            3 { $env:DEV_ZABBIX_HOST = 'zabbix3-web'; $env:DEV_ZABBIX_API_URL = 'http://zabbix3-web:80/api_jsonrpc.php';  }
+            4 { $env:DEV_ZABBIX_HOST = 'zabbix4-web'; $env:DEV_ZABBIX_API_URL = 'http://zabbix4-web:8080/api_jsonrpc.php';  }
+            5 { $env:DEV_ZABBIX_HOST = 'zabbix5-web'; $env:DEV_ZABBIX_API_URL = 'http://zabbix5-web:8080/api_jsonrpc.php';  }
+            Default { $env:DEV_ZABBIX_HOST = 'localhost'; $env:DEV_ZABBIX_API_URL = 'http://tools/zabbix/api_jsonrpc.php' }
         }
+        $global:baseUrl = $env:DEV_ZABBIX_API_URL
         $secpasswd = ConvertTo-SecureString "zabbix" -AsPlainText -Force
         $global:admin = New-Object System.Management.Automation.PSCredential ("Admin", $secpasswd)
 
@@ -43,6 +50,7 @@ Describe "New-ZbxApiSession" {
         $session["Auth"] | Should -Not -BeNullOrEmpty
         $session["ApiVersion"] | Should -Not -BeNullOrEmpty
         $session["ApiVersion"] | Should -BeOfType [Version]
+        $session["ApiVersion"].Major |Should -Be $ZabbixVersion
     }
 
     It "fails when URL is wrong" {
@@ -454,34 +462,29 @@ Describe "Remove-ZbxUser" {
 }
 
 Describe "Get-ZbxUserRole" {
-    Context "Zabbix 3 and 4" {
-        It "not supported" {
-            if ($PesterSession.ApiVersion.Major -lt 5) {
-                    Write-Information "Get-ZbxUserRole is not supported in Zabbix version $($PesterSession.ApiVersion.Major)" -InformationAction Continue
-            }
-        }
+    It "should read all roles" {
+        if ($PesterSession.ApiVersion.Major -lt 5) { Set-ItResult -Skipped -Because 'Not supported in versions < 5' }
+        $ret = Get-ZbxUserRole
+        $ret.Count | Should -BeGreaterThan 0
+        $ret.Name | Should -Contain 'Admin role'
     }
-    Context "Zabbix 5" {
-        It "should read all roles" {
-            $ret = Get-ZbxUserRole
-            $ret.Count | Should -BeGreaterThan 0
-            $ret.Name | Should -Contain 'Admin role'
-        }
-        It "can read by roleid" {
-            $ret = Get-ZbxUserRole -Id 1
-            $ret.Count | Should -BeExactly 1
-            $ret.Name | Should -Contain 'User role'
-        }
-        It "can read by role name" {
-            $ret = Get-ZbxUserRole -Name "Guest role"
-            $ret.Count | Should -BeExactly 1
-            $ret.Name | Should -Contain 'Guest role'
-        }
-        It "can read by wildcard role name" {
-            $ret = Get-ZbxUserRole -Name "Guest*"
-            $ret.Count | Should -BeExactly 1
-            $ret.Name | Should -Contain 'Guest role'
-        }
+    It "can read by roleid" {
+        if ($PesterSession.ApiVersion.Major -lt 5) { Set-ItResult -Skipped -Because 'Not supported in versions < 5' }
+        $ret = Get-ZbxUserRole -Id 1
+        $ret.Count | Should -BeExactly 1
+        $ret.Name | Should -Contain 'User role'
+    }
+    It "can read by role name" {
+        if ($PesterSession.ApiVersion.Major -lt 5) { Set-ItResult -Skipped -Because 'Not supported in versions < 5' }
+        $ret = Get-ZbxUserRole -Name "Guest role"
+        $ret.Count | Should -BeExactly 1
+        $ret.Name | Should -Contain 'Guest role'
+    }
+    It "can read by wildcard role name" {
+        if ($PesterSession.ApiVersion.Major -lt 5) { Set-ItResult -Skipped -Because 'Not supported in versions < 5' }
+        $ret = Get-ZbxUserRole -Name "Guest*"
+        $ret.Count | Should -BeExactly 1
+        $ret.Name | Should -Contain 'Guest role'
     }
 }
 
@@ -686,7 +689,11 @@ Describe "Get-ZbxMediaType" {
     }
     It "can filter by technical media type" {
         Get-ZbxMediaType -type Email | Should -Not -BeNullOrEmpty
-        Get-ZbxMediaType -type Webhook | Should -Not -BeNullOrEmpty
+        if ($PesterSession.ApiVersion.Major -eq 3) {
+            Get-ZbxMediaType -type Jabber | Should -Not -BeNullOrEmpty
+        } else {
+            Get-ZbxMediaType -type Webhook | Should -Not -BeNullOrEmpty
+        }
     }
 }
 
