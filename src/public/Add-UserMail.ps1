@@ -51,7 +51,9 @@ function Add-UserMail
     {
         if ($users.Count -eq 0) { return }
         if ((Get-CurrentApiVersion).Major -eq 3) {
-            Invoke-ZabbixApi $session "user.addmedia"  @{users = $users; medias = $media} | Select-Object -ExpandProperty mediaids
+            $ret = Invoke-ZabbixApi $session "user.addmedia"  @{users = $users; medias = $media}
+            # TODO: find a better solution for this ugly construction (works because can only return one value)
+            [int] ($ret | Select-Object -ExpandProperty mediaids)
         } else {
             $prms = @{
                 userid = $users[0].userid
