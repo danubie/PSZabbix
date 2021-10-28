@@ -60,7 +60,7 @@ function Get-User
      }
     if ($Id.Length -gt 0) {$prms["userids"] = $Id}
     if ($UserGroupId.Length -gt 0) {$prms["usrgrpids"] = $UserGroupId}
-    if ((Get-CurrentApiVersion).Major -eq 3) {
+    if ((Get-CurrentApiVersion).Major -lt 5) {
          #TODO: check if v4 supports Alias or Username
          if ($Name -ne $null) {$prms["search"]["alias"] = $Name}
     } else {
