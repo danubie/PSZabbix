@@ -42,12 +42,8 @@ function Enable-UserGroup
     end
     {
         if ($ids.Count -eq 0) { return }
-        if ((Get-CurrentApiVersion).Major -eq 3) {
-            Invoke-ZabbixApi $session "usergroup.massupdate" @{usrgrpids=$ids; users_status=0 } | Select-Object -ExpandProperty usrgrpids
-        } else {
-            $prms = @{ array = $ids }
-            Invoke-ZabbixApi $session "usergroup.update" $prms | Select-Object -ExpandProperty usrgrpids
-        }
+        $prms = @{ array = $ids }
+        Invoke-ZabbixApi $session "usergroup.update" $prms | Select-Object -ExpandProperty usrgrpids
     }
 }
 

@@ -36,18 +36,14 @@ function Disable-UserGroup
     Process
     {
         foreach ($grpId in $UserGroupId) {
-            $ids += @{ usrgrpid = $grpId; users_status = 1 }
+        $ids += @{ usrgrpid = $grpId; users_status = 1 }
         }
     }
     end
     {
         if ($ids.Count -eq 0) { return }
-        if ((Get-CurrentApiVersion).Major -eq 3) {
-            Invoke-ZabbixApi $session "usergroup.massupdate" @{usrgrpids=$ids; users_status=1} | Select-Object -ExpandProperty usrgrpids
-        } else {
-            $prms = @{ array = $ids }
-            Invoke-ZabbixApi $session "usergroup.update" $prms | Select-Object -ExpandProperty usrgrpids
-        }
+        $prms = @{ array = $ids }
+        Invoke-ZabbixApi $session "usergroup.update" $prms | Select-Object -ExpandProperty usrgrpids
     }
 }
 
