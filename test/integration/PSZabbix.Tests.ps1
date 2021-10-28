@@ -228,11 +228,11 @@ Describe "Get-ZbxTemplate" {
         Get-ZbxTemplate | Should -Not -BeNullOrEmpty
     }
     It "can filter by name with wildcard (explicit parameter)" {
-        Get-ZbxTemplate "Template OS Lin*" | Should -Not -BeNullOrEmpty
+        Get-ZbxTemplate "*Linux*" | Should -Not -BeNullOrEmpty
         Get-ZbxTemplate "XXXXXXXXXXXXXX" | Should -BeNullOrEmpty
     }
     It "can filter by ID (explicit parameter)" {
-        $h = (Get-ZbxTemplate "Template OS Lin*")[0]
+        $h = (Get-ZbxTemplate "*Linux*")[0]
         (Get-ZbxTemplate -Id $h.templateid).host | Should -Be $h.host
     }
 }
@@ -454,7 +454,14 @@ Describe "Remove-ZbxUser" {
 }
 
 Describe "Get-ZbxUserRole" {
-    Context "ContextName" {
+    Context "Zabbix 3 and 4" {
+        It "not supported" {
+            if ($PesterSession.ApiVersion.Major -lt 5) {
+                    Write-Information "Get-ZbxUserRole is not supported in Zabbix version $($PesterSession.ApiVersion.Major)" -InformationAction Continue
+            }
+        }
+    }
+    Context "Zabbix 5" {
         It "should read all roles" {
             $ret = Get-ZbxUserRole
             $ret.Count | Should -BeGreaterThan 0
