@@ -471,13 +471,13 @@ Describe "Get-ZbxUserRole" {
     It "can read by roleid" {
         if ($PesterSession.ApiVersion.Major -lt 5) { Set-ItResult -Skipped -Because 'Not supported in versions < 5' }
         $ret = Get-ZbxUserRole -Id 1
-        $ret.Count | Should -BeExactly 1
+        $ret | Should -HaveCount 1
         $ret.Name | Should -Contain 'User role'
     }
     It "can read by role name" {
         if ($PesterSession.ApiVersion.Major -lt 5) { Set-ItResult -Skipped -Because 'Not supported in versions < 5' }
         $ret = Get-ZbxUserRole -Name "Guest role"
-        $ret.Count | Should -BeExactly 1
+        $ret | Should -HaveCount 1
         $ret.Name | Should -Contain 'Guest role'
     }
     It "can read by wildcard role name" {
