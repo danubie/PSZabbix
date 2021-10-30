@@ -43,9 +43,9 @@ function Update-Host
         } else {
             # compatibility issue in 4.x?
             # Property "auto_compress" is returned by Get-ZbxHost, but can not be updated
-            $tempHost = $HostObject |
-                ForEach-Object { Select-Object -InputObject $_ -ExcludeProperty auto_compress }
-            $Hosts += $tempHost
+            $Hosts = foreach ($h in $HostObject) {
+                $h | Select-Object * -ExcludeProperty auto_compress
+            }
         }
     }
     end
