@@ -483,7 +483,7 @@ Describe "Get-ZbxUserRole" {
     It "can read by wildcard role name" {
         if ($PesterSession.ApiVersion.Major -lt 5) { Set-ItResult -Skipped -Because 'Not supported in versions < 5' }
         $ret = Get-ZbxUserRole -Name "Guest*"
-        $ret.Count | Should -BeExactly 1
+        $ret | Should -HaveCount 1
         $ret.Name | Should -Contain 'Guest role'
     }
 }
