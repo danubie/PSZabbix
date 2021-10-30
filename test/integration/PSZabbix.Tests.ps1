@@ -12,10 +12,11 @@ BeforeAll {
         Import-Module $moduleRoot/$moduleName.psd1 -Force
 
         switch ($ZabbixVersion) {
+            1 { $env:DEV_ZABBIX_HOST = 'localhost'; $env:DEV_ZABBIX_API_URL = 'http://tools/zabbix/api_jsonrpc.php' }
             3 { $env:DEV_ZABBIX_HOST = 'zabbix3-web'; $env:DEV_ZABBIX_API_URL = 'http://zabbix3-web:80/api_jsonrpc.php';  }
             4 { $env:DEV_ZABBIX_HOST = 'zabbix4-web'; $env:DEV_ZABBIX_API_URL = 'http://zabbix4-web:8080/api_jsonrpc.php';  }
             5 { $env:DEV_ZABBIX_HOST = 'zabbix5-web'; $env:DEV_ZABBIX_API_URL = 'http://zabbix5-web:8080/api_jsonrpc.php';  }
-            Default { $env:DEV_ZABBIX_HOST = 'localhost'; $env:DEV_ZABBIX_API_URL = 'http://tools/zabbix/api_jsonrpc.php' }
+            Default {  }
         }
         $global:baseUrl = $env:DEV_ZABBIX_API_URL
         $secpasswd = ConvertTo-SecureString "zabbix" -AsPlainText -Force
@@ -50,7 +51,6 @@ Describe "New-ZbxApiSession" {
         $session["Auth"] | Should -Not -BeNullOrEmpty
         $session["ApiVersion"] | Should -Not -BeNullOrEmpty
         $session["ApiVersion"] | Should -BeOfType [Version]
-        $session["ApiVersion"].Major |Should -Be $ZabbixVersion
     }
 
     It "fails when URL is wrong" {
